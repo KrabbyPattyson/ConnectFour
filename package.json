@@ -1,0 +1,23 @@
+{
+  "name": "connectfour-bpatterson",
+  "version": "1.0.0",
+  "description": "This is a website where people can play the game Connect Four against other people online.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KrabbyPattyson/ConnectFour.git"
+  },
+  "author": "Bryce Patterson",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/KrabbyPattyson/ConnectFour/issues"
+  },
+  "homepage": "https://github.com/KrabbyPattyson/ConnectFour#readme",
+  "dependencies": {
+    "node-static": "^0.7.11",
+    "socket.io": "^4.5.1"
+  }
+}
