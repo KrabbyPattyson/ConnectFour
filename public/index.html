@@ -12,19 +12,45 @@
       crossorigin="anonymous">
     <style>
       body {
-        background-color:rgb(204,213,255);
+        background-color:rgb(82, 112, 239);
       }
-      img{
-        size: 125%;
+
+      .display-header {
+        visibility: hidden;
+        animation: 1s ease-in 0.5s 1 bringDownHeader forwards;
+        margin-top:8%;
+        margin-bottom:2%;
+        font-size: 8rem;
+        color: #FFFFFF;
+        text-shadow: -2px 2px 0 #000,
+				  2px 2px 0 #000,
+				 2px -2px 0 #000,
+				-2px -2px 0 #000;
+
+      }
+
+      .display-footer {
+        margin-top: 10%;
+      }
+
+      @keyframes bringDownHeader {
+        0% {
+          transform: translateY(-250%);
+          visibility: visible;
+        }
+        100% {
+          transform: translateY(0);
+          visibility:visible;
+        }
       }
     </style>
     <title>Home | Connect Four</title>
   </head>
   <body>
     <div class="container-fluid">
-      <div class="row m-3">
-        <div class="col text-center">
-          <img src="assets/images/top-splash.gif" alt="Connect Four logo"/>
+      <div class="row align-items-start">
+        <div class="col text-center display-header">
+          Connect Four
         </div>
       </div>
       <div class="row align-items-center justify-content-center m-3">
@@ -33,14 +59,14 @@
             <span class="input-group-text" id="displayName">Name</span>
             <input type="text" class="form-control text-nowrap" id="nameInput"
               placeholder="Choose your display name"
-              aria-label="Enter your display name for use while playing Reversi"
+              aria-label="Enter your display name for playing Reversi"
               aria-describedby="displayName" />
             <button type="submit" class="btn btn-success text-nowrap" id="lobbyButton"
               onclick="goToLobby()">Enter Lobby</button>
           </div>
         </div>
       </div>
-      <div class="row m-3">
+      <div class="row m-3 display-footer" >
         <div class="col text-center">
           <a class="btn btn-success text-nowrap" href="about.html">About</a>
         </div>

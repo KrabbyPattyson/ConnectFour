@@ -5,6 +5,9 @@ let static = require('node-static');
 /* Set up the http server library */
 let http = require('http');
 
+/* Set up xss filter */
+let xss = require('xss');
+
 /* Assume that we are running on Heroku */
 let port = process.env.PORT;
 let directory = __dirname + '/public';
@@ -106,6 +109,9 @@ io.on('connection', (socket) => {
             serverLog('join_room command failed', JSON.stringify(response));
             return;
         }
+
+        /* Scrub the username for cross-site scripting */
+        username = xss(username);
 
         /* Handle the command */
         socket.join(room);
@@ -339,7 +345,7 @@ io.on('connection', (socket) => {
         /* Make sure the player to engage is present */
         io.in(room).allSockets().then((sockets) => {
             /* Engaged player isn't in the room */
-            if ((typeof sockets == 'undefined') || (sockets === null) || !sockets.has(requested_user)) { /* V14 19:41 */
+            if ((typeof sockets == 'undefined') || (sockets === null) || !sockets.has(requested_user)) {
                 response = {
                     result: 'fail',
                     message: 'the user that was engaged to play is no longer in the room'
@@ -406,7 +412,7 @@ io.on('connection', (socket) => {
         serverLog('Server received a command', '\'send_chat_message\'', JSON.stringify(payload));
         /* Check that the data coming in is good */
         if ((typeof payload == 'undefined') || (payload === null)) {
-            response = {};
+            let response = {};
             response.result = 'fail';
             response.message = 'client did not send a payload';
             socket.emit('send_chat_message_response', response);
@@ -414,10 +420,10 @@ io.on('connection', (socket) => {
             return;
         }
         let room = payload.room;
-        let username = payload.username;
-        let message = payload.message;
+        let username = xss(payload.username);
+        let message = xss(payload.message);
         if ((typeof room == 'undefined') || (room === null)) {
-            response = {};
+            let response = {};
             response.result = 'fail';
             response.message = 'client did not send a valid room to message';
             socket.emit('send_chat_message_response', response);
@@ -425,15 +431,15 @@ io.on('connection', (socket) => {
             return;
         }
         if ((typeof username == 'undefined') || (username === null)) {
-            response = {};
+            let response = {};
             response.result = 'fail';
             response.message = 'client did not send a valid username as a message source';
             socket.emit('send_chat_message_response', response);
             serverLog('send_chat_message command failed', JSON.stringify(response));
             return;
         }
-        if ((typeof message == 'undefined') || (message === null)) {
-            response = {};
+        if ((typeof message == 'undefined') || (message === null) || (message !== xss(message))) {
+            let response = {};
             response.result = 'fail';
             response.message = 'client did not send a valid message';
             socket.emit('send_chat_message_response', response);
