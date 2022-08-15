@@ -298,7 +298,7 @@ socket.on('game_update', (payload) =>{
 
     var rowLength = 6;
     var columnLength = 7;
-
+    
     /* Animate changes to the board */
     for (let row = 0; row < rowLength; row++){
         for (let column = 0; column < columnLength; column++){
@@ -307,25 +307,30 @@ socket.on('game_update', (payload) =>{
             if (old_board[row][column] !== board[row][column]){
                 let graphic = "";
                 let altTag = "";
+                let className = "";
                 if((old_board[row][column] === '?') && (board[row][column] === ' ')){
                     graphic = "empty.gif";
                     altTag = "empty space";
                 }
                 else if((old_board[row][column] === '?') && (board[row][column] === 'w')){
-                    graphic = "empty_to_white.gif";
+                    graphic = "white.gif";
                     altTag = "white token";
+                    className = "new-token";
                 }
                 else if((old_board[row][column] === '?') && (board[row][column] === 'b')){
-                    graphic = "empty_to_black.gif";
+                    graphic = "black.gif";
                     altTag = "black token";
+                    className = "new-token";
                 }
                 else if((old_board[row][column] === ' ') && (board[row][column] === 'w')){
-                    graphic = "empty_to_white.gif";
+                    graphic = "white.gif";
                     altTag = "white token";
+                    className = "new-token";
                 }
                 else if((old_board[row][column] === ' ') && (board[row][column] === 'b')){
-                    graphic = "empty_to_black.gif";
+                    graphic = "black.gif";
                     altTag = "black token";
+                    className = "new-token";
                 }
                 else if((old_board[row][column] === 'w') && (board[row][column] === ' ')){
                     graphic = "empty.gif";
@@ -341,12 +346,13 @@ socket.on('game_update', (payload) =>{
                 }
 
                 const t = Date.now();
-                $('#' + row + '_' + column).html('<img class="img-fluid" src=" assets/images/' + graphic + '?time=' + t + '" alt="' + altTag + '" />');
+                $('#' + row + '_' + column).html(`<img class="img-fluid ${className}" src="assets/images/${graphic}?time=${t}" alt="${altTag}" data-row="${row}"/>`);
             }
             /* Set up interactivity here */
             $('#' + row + '_' + column).off('click');
             $('#' + row + '_' + column).removeClass('hovered_over');
             if (payload.game.whose_turn === my_color) {
+
                 if (payload.game.legal_moves[row][column] === my_color.substring(0, 1)) {
                     $('#' + row + '_' + column).addClass('hovered_over');
                     $('#' + row + '_' + column).click(((r, c) => {
@@ -361,6 +367,7 @@ socket.on('game_update', (payload) =>{
                         });
                     })(row, column));
                 }
+
             }
         }
     }

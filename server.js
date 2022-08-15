@@ -570,19 +570,26 @@ io.on('connection', (socket) => {
         };
         socket.emit('play_token_response', response);
 
+        /* Change the token's position if necessary
+            Check if the token was requested to play on a position higher than legal,
+            that is, if there is a gap underneath the newly played token.
+            If so, "drop" it down.
+        */
+        while((row !== 5) && (game.board[row+1][column] === ' ')){
+            row++;
+        }
+
         /* Execute the move 
             Change the selected spot to my_color
             Change the current turn to the other player
         */
         if (color === 'white') {
             game.board[row][column] = 'w';
-            //flip_tokens('w', row, column, game.board);
             game.whose_turn = 'black';
             game.legal_moves = calculate_legal_moves('b', game.board)
         }
         else if (color === 'black') {
             game.board[row][column] = 'b';
-            //flip_tokens('b', row, column, game.board);
             game.whose_turn = 'white';
             game.legal_moves = calculate_legal_moves('w', game.board)
         }
@@ -712,7 +719,12 @@ function calculate_legal_moves(who, board){
 
     for(let row = 0; row < rowLength; row++){
         for(let column = 0; column < columnLength; column++) {
+            /*
             if ((board[row][column] === ' ') && ((row === 5) || (row < rowLength+1 && board[row + 1][column] !== ' '))) {
+                legal_moves[row][column] = who;
+            }
+            */
+            if(board[row][column] === ' ') {
                 legal_moves[row][column] = who;
             }
         }
