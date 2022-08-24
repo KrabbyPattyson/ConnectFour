@@ -8,6 +8,16 @@ let http = require('http');
 /* Set up xss filter */
 let xss = require('xss');
 
+/* Set up MySQL dependency */
+let mysql = require('mysql');
+var connection = mysql.createConnection({
+    host: "connectfour-db.cywot9dwqo9j.us-east-2.rds.amazonaws.com",
+    user: "admin",
+    password: "JeffBezos2024",
+    port: "3306",
+    database: "mydb"
+})
+
 /* Assume that we are running on Heroku */
 let port = process.env.PORT;
 let directory = __dirname + '/public';
@@ -53,6 +63,95 @@ io.on('connection', (socket) => {
         messages.forEach((item) => {
             io.emit('log', ['****\t' + item]);
             console.log(item);
+        });
+    }
+
+    function databaseLog(command, payload) {
+        /* Check parameters and make sure nothing in payload is undefined or blank */
+        if((typeof payload == 'undefined') || (payload === null)) {
+            serverLog('databaseLog command failed', 'client did not send a payload');
+            return;
+        }
+        if((typeof command == 'undefined') || (command === null)){
+            serverLog('databaseLog command failed', 'client did not send a command');
+            return;
+        }
+        for (const property in payload){
+            if((typeof property == 'undefined') || (property === null)){
+                serverLog(`databaseLog command failed`, `${property} was ${payload[property]}`);
+                return;
+            }
+        }
+    
+        /* Create a SQL string to execute, depending on the command given */
+        let time = new Date();
+        let currentTime = time.getMonth() + "/" + time.getDate() + "/" + time.getFullYear() 
+        + " " + time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds() + ":" + time.getMilliseconds();
+        let sql = '';
+    
+        if(command === "join_room"){
+            let username = payload.username;
+            let room = payload.room;
+            sql = `INSERT INTO ${command} VALUES ("${currentTime}", "${room}", "${username}");`;
+        } else if(command === "send_chat_message"){
+            let username = payload.username;
+            let room = payload.room;
+            let message = payload.message;
+            sql = `INSERT INTO ${command} VALUES ("${currentTime}", "${room}", "${username}", "${message}`;
+        } else if(command === "invite" || command === "uninvite"){
+            let username = payload.username;
+            let partner = payload.partner;
+            let room = payload.room;
+            sql = `INSERT INTO ${command} VALUES ("${currentTime}", "${room}", "${username}", "${partner}`;
+        } else if(command === "game_start"){
+            let username = payload.username;
+            let partner = payload.partner;
+            let room = payload.room;
+            sql = `INSERT INTO ${command} VALUES ("${currentTime}", "${room}", "${username}", "${partner}`;
+        } else if(command === "disconnect"){
+            let username = payload.username;
+            let room = payload.room;
+            sql = `INSERT INTO ${command} VALUES ("${currentTime}", "${room}", "${username}"`;
+        } else if(command === "play_token"){
+            let username = payload.username;
+            let room = payload.room;
+            let board = payload.board;
+            let token = payload.token;
+            sql = `INSERT INTO ${command} VALUES ("${currentTime}", "${room}", "${username}", "${board}", "${token}"`;
+        } else if(command === "game_over"){
+            let username = payload.username;
+            let partner = payload.partner;
+            let room = payload.room;
+            let board = payload.board;
+            sql = `INSERT INTO ${command} VALUES ("${currentTime}", "${room}", "${username}", "${partner}", "${board}"`;
+        } else {
+            serverLog("databaseLog command failed", `Invalid command: ${command}`);
+            return;
+        }
+    
+        /* Execute the SQL string */
+        /*
+        connection.connect(function(err){
+            if (err) {
+                serverLog('databaseLog command failed', `Connection error: ${err}`);
+                return;
+            }
+            connection.query(sql, function(err, result) {
+                if(err) {
+                    serverLog(`databaseLog command failed`, `Querying error: ${err}`, `${sql}`);
+                    return;
+                }
+                console.log(command + " succesfully logged.");
+                connection.end();
+            });
+        });
+        */
+        connection.query(sql, function(err, result) {
+            if(err) {
+                serverLog(`databaseLog command failed`, `Querying error: ${err}`, `${sql}`);
+                return;
+            }
+            console.log(command + " succesfully logged.");
         });
     }
 
@@ -151,6 +250,13 @@ io.on('connection', (socket) => {
                 }
             }
         });
+
+        /* Log the connection in the database */
+        let dbPayload = {
+            username: username,
+            room: room
+        };
+        databaseLog('join_room', dbPayload);
     });
 
 
@@ -642,9 +748,9 @@ function check_line(board, row, column, dirY, dirX, who){
         for(let i = 0; i < 4; i++){
             let columnPos = (column + (i - shift) * dirX);
             let rowPos = (row + (i - shift) * dirY);
-            if( columnPos > 0 &&
+            if( columnPos >= 0 &&
                 columnPos < columnLength &&
-                rowPos > 0 &&
+                rowPos >= 0 &&
                 rowPos < rowLength){
                 
                 // Check if this is the correct color
